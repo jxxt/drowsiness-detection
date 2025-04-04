@@ -13,21 +13,54 @@ const videoConstraints = {
 const Home = () => {
   const webcamRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const capture = () => {
+  const capture = async () => {
+    setIsLoading(true);
     const imageSrc = webcamRef.current.getScreenshot();
     setCapturedImage(imageSrc);
 
-    // Simulate sending image to backend and getting a response
-    // In production, send `imageSrc` to your API endpoint.
-    setTimeout(() => {
-      const isDrowsy = Math.random() < 0.5;
-      if(isDrowsy) {
-        toast.error("Drowsy", { position: toast.POSITION.TOP_CENTER });
-      } else {
-        toast.success("Not Drowsy", { position: toast.POSITION.TOP_CENTER });
+    try {
+      // Convert base64 image to blob for API upload
+      const blob = await fetch(imageSrc).then(res => res.blob());
+      
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', blob, 'capture.jpg');
+
+      // Call your FastAPI endpoint
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
       }
-    }, 1000);
+
+      const result = await response.json();
+
+      // Show toast based on prediction
+      if (result.predicted_class === 'Drowsy') {
+        toast.error(`Drowsy detected! (Confidence: ${(result.confidence * 100).toFixed(1)}%)`, {
+          position: "top-center",
+          autoClose: 5000
+        });
+      } else {
+        toast.success(`Alert (Confidence: ${(result.confidence * 100).toFixed(1)}%)`, {
+          position: "top-center",
+          autoClose: 3000
+        });
+      }
+
+    } catch (error) {
+      toast.error('Error processing image', {
+        position: "top-center"
+      });
+      console.error('API Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,10 +76,22 @@ const Home = () => {
           videoConstraints={videoConstraints}
         />
       </div>
-      <button className="capture-button" onClick={capture}>
-        Capture
+      <button 
+        className={`capture-button ${isLoading ? 'loading' : ''}`} 
+        onClick={capture}
+        disabled={isLoading}
+      >
+        {isLoading ? 'Processing...' : 'Capture'}
       </button>
-      <ToastContainer />
+      
+      {capturedImage && (
+        <div className="captured-image">
+          <h3>Last Captured Image:</h3>
+          <img src={capturedImage} alt="Captured" style={{ maxWidth: '100%' }} />
+        </div>
+      )}
+      
+      <ToastContainer position="top-center" />
     </div>
   );
 };
