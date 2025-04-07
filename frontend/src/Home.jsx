@@ -65,31 +65,58 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <h1>Employee Drowsiness Detection</h1>
-      <div className="webcam-container">
-        <Webcam
-          audio={false}
-          height={480}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={640}
-          videoConstraints={videoConstraints}
-        />
+      <div className="header">
+        <h1>Employee Drowsiness Detection</h1>
+        <p className="subtitle">AI-powered monitoring system</p>
       </div>
-      <button 
-        className={`capture-button ${isLoading ? 'loading' : ''}`} 
-        onClick={capture}
-        disabled={isLoading}
-      >
-        {isLoading ? 'Processing...' : 'Capture'}
-      </button>
       
-      {capturedImage && (
-        <div className="captured-image">
-          <h3>Last Captured Image:</h3>
-          <img src={capturedImage} alt="Captured" style={{ maxWidth: '100%' }} />
+      <div className="content-container">
+        <div className="webcam-section">
+          <div className="webcam-container">
+            <div className="webcam-overlay">
+              <div className="corner top-left"></div>
+              <div className="corner top-right"></div>
+              <div className="corner bottom-left"></div>
+              <div className="corner bottom-right"></div>
+            </div>
+            <Webcam
+              audio={false}
+              height={480}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              width={640}
+              videoConstraints={videoConstraints}
+              className="webcam-video"
+              mirrored={true}
+            />
+            {isLoading && <div className="scanning-effect"></div>}
+          </div>
+          
+          <button 
+            className={`capture-button ${isLoading ? 'loading' : ''}`} 
+            onClick={capture}
+            disabled={isLoading}
+          >
+            <span className="button-icon">{isLoading ? '⟳' : '◉'}</span>
+            <span className="button-text">{isLoading ? 'Processing...' : 'Capture Image'}</span>
+          </button>
         </div>
-      )}
+
+        {capturedImage && (
+          <div className="result-section">
+            <div className="captured-image">
+              <h3>Last Captured Image</h3>
+              <div className="image-container">
+                <img src={capturedImage} alt="Captured" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="footer">
+        <p>Advanced Computer Vision • Machine Learning • Real-time Detection</p>
+      </div>
       
       <ToastContainer position="top-center" />
     </div>
