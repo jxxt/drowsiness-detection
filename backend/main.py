@@ -17,7 +17,7 @@ model = tf.keras.models.load_model("model.keras")
 # Constants (match your predict_drowsiness() function)
 INPUT_SHAPE = (224, 224)
 CLASS_NAMES = ['Non-Drowsy', 'Drowsy']
-DEFAULT_THRESHOLD = 0.5
+DEFAULT_THRESHOLD = 0.9
 
 app = FastAPI(
     title="Drowsiness Detection API",
