@@ -29,7 +29,14 @@ const Home = () => {
       formData.append('file', blob, 'capture.jpg');
 
       // Call your FastAPI endpoint
-      const response = await fetch('http://localhost:8000/predict', {
+      // Local API (comment out when using deployed API)
+      // const response = await fetch('http://localhost:8000/predict', {
+      //   method: 'POST',
+      //   body: formData
+      // });
+
+      // Deployed API on Render
+      const response = await fetch('https://drowsiness-detection-api-znd4.onrender.com/predict', {
         method: 'POST',
         body: formData
       });
