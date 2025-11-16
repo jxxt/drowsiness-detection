@@ -1,1 +1,4 @@
 /tes*
+
+# Model file (hosted on Hugging Face)
+model.keras

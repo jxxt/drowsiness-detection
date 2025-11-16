@@ -22,14 +22,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY main.py .
 
-# Download model from external storage (option for large models)
-# Uncomment and replace FILE_ID if using Google Drive
-# RUN apt-get update && apt-get install -y wget && \
-#     wget --no-check-certificate 'https://drive.google.com/uc?export=download&id=FILE_ID' -O model.keras && \
-#     apt-get remove -y wget && apt-get autoremove -y
+# Download model from Hugging Face (free, unlimited storage)
+# Replace YOUR_USERNAME with your HuggingFace username after uploading
+RUN python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='jxxt/drowsiness-detection-model', filename='model.keras', local_dir='.')"
 
-# Copy model from local (default - requires Git LFS for 400MB file)
-COPY model.keras .
+# Fallback: Copy model from local if HF download fails (for testing)
+# COPY model.keras .
 
 # Expose the port FastAPI runs on
 EXPOSE 8000
