@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: drowsiness-detection-api
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /docs
+    envVars:
+      - key: PORT
+        value: 8000

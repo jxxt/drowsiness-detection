@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  drowsiness-api:
+    build: .
+    container_name: drowsiness-detection-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # Optional: Mount for development (uncomment to edit code without rebuilding)
+    # volumes:
+    #   - ./main.py:/app/main.py
+    environment:
+      - PYTHONUNBUFFERED=1
