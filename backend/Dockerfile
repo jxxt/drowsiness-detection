@@ -19,8 +19,16 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code and model
+# Copy application code
 COPY main.py .
+
+# Download model from external storage (option for large models)
+# Uncomment and replace FILE_ID if using Google Drive
+# RUN apt-get update && apt-get install -y wget && \
+#     wget --no-check-certificate 'https://drive.google.com/uc?export=download&id=FILE_ID' -O model.keras && \
+#     apt-get remove -y wget && apt-get autoremove -y
+
+# Copy model from local (default - requires Git LFS for 400MB file)
 COPY model.keras .
 
 # Expose the port FastAPI runs on
