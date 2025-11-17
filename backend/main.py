@@ -1,18 +1,41 @@
-import tensorflow as tf
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
-import uvicorn
-import numpy as np
-from PIL import Image
-import io
-from typing import Optional
-
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
+import io
+from PIL import Image
+import numpy as np
+import uvicorn
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, UploadFile, File, HTTPException
+import tensorflow as tf
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Reduce TensorFlow logging
+# Disable oneDNN optimizations to save memory
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 
+# Configure TensorFlow to use less memory
+physical_devices = tf.config.list_physical_devices('CPU')
+if physical_devices:
+    try:
+        # Set memory growth to avoid allocating all memory at once
+        tf.config.set_logical_device_configuration(
+            physical_devices[0],
+            [tf.config.LogicalDeviceConfiguration(
+                memory_limit=400)]  # 400MB limit
+        )
+    except:
+        pass
 
-# Load the model
-model = tf.keras.models.load_model("model.keras")
+# Lazy load model (only load when needed)
+model = None
+
+
+def get_model():
+    global model
+    if model is None:
+        model = tf.keras.models.load_model("model.keras")
+    return model
+
 
 # Constants (match your predict_drowsiness() function)
 INPUT_SHAPE = (224, 224)
@@ -31,6 +54,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/predict")
 async def predict(
     file: UploadFile = File(..., description="Image file (JPEG/PNG)"),
@@ -40,12 +64,12 @@ async def predict(
     """
     Analyze an image for drowsiness using identical preprocessing to your 
     predict_drowsiness() function.
-    
+
     Parameters:
     - file: Image file
     - threshold: Optional confidence threshold (default: 0.5)
     - show_image: Debug flag to return base64 image (not recommended for production)
-    
+
     Returns:
     - JSON response matching your function's output format
     """
@@ -57,14 +81,15 @@ async def predict(
         # 2. Identical preprocessing to predict_drowsiness()
         contents = await file.read()
         img = Image.open(io.BytesIO(contents))
-        
+
         # Match your function's preprocessing exactly:
         img = img.convert('RGB').resize(INPUT_SHAPE)
         img_array = np.array(img) / 255.0  # Normalization
         img_array = np.expand_dims(img_array, axis=0)  # Add batch dim
 
         # 3. Same prediction logic
-        confidence = float(model.predict(img_array)[0][0])
+        model = get_model()
+        confidence = float(model.predict(img_array, verbose=0)[0][0])
         current_threshold = threshold if threshold is not None else DEFAULT_THRESHOLD
         predicted_class = CLASS_NAMES[int(confidence > current_threshold)]
 
@@ -82,7 +107,8 @@ async def predict(
             import base64
             buffered = io.BytesIO()
             img.save(buffered, format="JPEG")
-            response["image_base64"] = base64.b64encode(buffered.getvalue()).decode()
+            response["image_base64"] = base64.b64encode(
+                buffered.getvalue()).decode()
 
         return response
 

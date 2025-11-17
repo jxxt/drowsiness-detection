@@ -35,9 +35,9 @@ const Home = () => {
             //   body: formData
             // });
 
-            // Deployed API on Render
+            // Deployed API on Google Cloud Run
             const response = await fetch(
-                "https://drowsiness-detection-api-znd4.onrender.com/predict",
+                "https://drowsiness-api-479356669218.us-central1.run.app/predict",
                 {
                     method: "POST",
                     body: formData,

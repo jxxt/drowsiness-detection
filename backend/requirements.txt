@@ -4,4 +4,3 @@ tensorflow-cpu
 pillow
 python-multipart
 numpy
-huggingface-hub

@@ -19,19 +19,12 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application code and model
 COPY main.py .
-
-# Download model from Hugging Face (free, unlimited storage)
-# Replace YOUR_USERNAME with your HuggingFace username after uploading
-RUN python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='jxxt/drowsiness-detection-model', filename='model.keras', local_dir='.')"
-
-# Fallback: Copy model from local if HF download fails (for testing)
-# COPY model.keras .
+COPY model.keras .
 
 # Expose the port FastAPI runs on
-EXPOSE 8000
+EXPOSE 8080
 
 # Command to run the application
-# Use PORT environment variable for Render compatibility, fallback to 8000
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
