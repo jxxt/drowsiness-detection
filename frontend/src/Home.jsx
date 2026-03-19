@@ -37,7 +37,7 @@ const Home = () => {
 
             // Deployed API on Google Cloud Run
             const response = await fetch(
-                "https://drowsiness-api-479356669218.us-central1.run.app/predict",
+                "https://drowsiness-api-863101222099.us-central1.run.app/predict",
                 {
                     method: "POST",
                     body: formData,
